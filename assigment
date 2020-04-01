@@ -1,0 +1,33 @@
+a. Setup following web application deployment: NGINX as reverse proxy for
+uWSGI app server, PostgreSQL and Django
+# Installing the Packages from the Ubuntu Repositories ,If you are using Django with Python 3, type:
+    sudo apt update
+    sudo apt install python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
+#Django 1.11 is the last release of Django that will support Python 2. 
+#If you are starting new projects, it is strongly recommended that you choose Python 3. 
+#If you still need to use Python 2, type:
+    sudo apt update
+    sudo apt install python-pip python-dev libpq-dev postgresql postgresql-contrib nginx curl
+#Creating the PostgreSQL Database and User
+#Log into an interactive Postgres session by typing:
+    sudo -u postgres psql
+#You will be given a PostgreSQL prompt where we can set up our requirements.
+# First, create a database for your project  
+  postgres=  CREATE DATABASE app1;
+# Next, create a database user for our project. Make sure to select a secure password:
+   postgres=#CREATE USER dan WITH PASSWORD 'Root@321';
+   postgres=#ALTER ROLE dan SET client_encoding TO 'utf8';
+   postgres=#ALTER ROLE dan SET default_transaction_isolation TO 'read committed';
+   postgres=#ALTER ROLE dan SET timezone TO 'UTC';
+   postgres=#GRANT ALL PRIVILEGES ON DATABASE app1 TO dan;
+   postgres=#\q;
+ #Creating a Python Virtual Environment for your Project
+ #To do this, we first need access to the virtualenv command. We can install this with pip.
+    sudo -H pip3 install --upgrade pip
+    sudo -H pip3 install virtualenv
+    With virtualenv installed, we can start forming our project. Create and move into a directory where we can keep our project files:
+
+
+
+
+    
