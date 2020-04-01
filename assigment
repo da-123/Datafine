@@ -25,9 +25,38 @@ uWSGI app server, PostgreSQL and Django
  #To do this, we first need access to the virtualenv command. We can install this with pip.
     sudo -H pip3 install --upgrade pip
     sudo -H pip3 install virtualenv
-    With virtualenv installed, we can start forming our project. Create and move into a directory where we can keep our project files:
-
-
-
-
-    
+ #With virtualenv installed, we can start forming our project. Create and move into a directory where we can keep our project files:
+    mkdir ~/myprojectdir
+    cd ~/myprojectdir
+#Within the project directory, create a Python virtual environment by typing:
+  virtualenv myprojectenv
+# Before we install our project’s Python requirements, we need to activate the virtual environment. You can do that by typing:
+  source myprojectenv/bin/activate
+#With your virtual environment active, install Django, Gunicorn, and the psycopg2 PostgreSQL adaptor with the local instance of pip:
+  (myprojectenv)$ :pip install django gunicorn psycopg2-binary
+ #Creating and Configuring a New Django Project
+ (myprojectenv)$: django-admin.py startproject myproject ~/myprojectdir
+# Adjusting the Project Settings
+(myprojectenv)$: nano ~/myprojectdir/myproject/settings.py
+# Note: Be sure to include localhost as one of the options since we will be proxying connections through a local Nginx instance.
+   # The simplest case: just add the domain name(s) and IP addresses of your Django server
+   # ALLOWED_HOSTS = [ 'example.com', '203.0.113.5']
+   # To respond to 'example.com' and any subdomains, start the domain with a dot
+   # ALLOWED_HOSTS = ['.example.com', '203.0.113.5']
+   ALLOWED_HOSTS = ['IP', 'second_domain_or_IP', . . ., 'localhost']
+Next, find the section that configures database access. It will start with DATABASES. The configuration in the file is for a SQLite database.
+We already created a PostgreSQL database for our project, so we need to adjust the settings.  
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'app1',
+        'USER': 'dan',
+        'PASSWORD': 'Root@123#',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+This is necessary so that Nginx can handle requests for these items.
+The following line tells Django to place them in a directory called static in the base project directory:
+   STATIC_URL = '/static/'
+   STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
