@@ -131,25 +131,4 @@ The following line tells Django to place them in a directory called static in th
     sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled
     sudo nginx -t
     sudo systemctl restart nginx
-  # The Final step would be Testing if the cofiguration is working accordingly
-
-
-
-
-
-   
-   
-   
-   
-   
-
-
-
-   
-   
-   
-   
-   
-   
-   
-   
+  # The Final step would be Testing if the cofiguration is working accordingly.
