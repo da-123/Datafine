@@ -1,5 +1,4 @@
-a. Setup following web application deployment: NGINX as reverse proxy for
-uWSGI app server, PostgreSQL and Django
+a. Setup following web application deployment: NGINX as reverse proxy for uWSGI app server, PostgreSQL and Django
 # Installing the Packages from the Ubuntu Repositories ,If you are using Django with Python 3, type:
     sudo apt update
     sudo apt install python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
@@ -60,3 +59,97 @@ This is necessary so that Nginx can handle requests for these items.
 The following line tells Django to place them in a directory called static in the base project directory:
    STATIC_URL = '/static/'
    STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+ # Completing Initial Project Setup
+ # we can migrate the initial database schema to our PostgreSQL database using the management script
+    (myprojectenv)$: ~/myprojectdir/manage.py makemigrations
+    (myprojectenv)$:~/myprojectdir/manage.py migrate
+ # Create an administrative user for the project by typing:
+    (myprojectenv)$:~/myprojectdir/manage.py createsuperuser
+ #collect all of the static content into the directory location
+   (myprojectenv)$: ~/myprojectdir/manage.py collectstatic
+ #starting up the Django development server 
+   (myprojectenv)$: ~/myprojectdir/manage.py runserver 0.0.0.0:8000
+ #your web browser, visit your server’s domain name or IP address followed by :8000
+   http://server_domain_or_IP:8000
+  #Testing Gunicorn’s Ability to Serve the Project
+     (myprojectenv)$:  cd ~/myprojectdir
+     (myprojectenv)$:   gunicorn --bind 0.0.0.0:8000 myproject.wsgi
+   #We’re now finished configuring our Django application. We can back out of our virtual environment by typing
+    (myprojectenv)$:deactivate
+   #Creating systemd Socket and Service Files for Gunicorn
+     sudo nano /etc/systemd/system/gunicorn.socket
+   # we will create a [Unit] section to describe the socket, a [Socket] section to define the socket location, and an [Install] section to make sure the socket is created at the right time
+          [Unit]
+          Description=gunicorn socket
+          [Socket]
+          ListenStream=/run/gunicorn.sock
+          [Install]
+          WantedBy=sockets.target
+     # Save and close the file.
+      sudo nano /etc/systemd/system/gunicorn.service
+      [Unit]
+      Description=gunicorn daemon
+      Requires=gunicorn.socket
+      After=network.target
+      [Service]
+      User=dan
+      Group=www-data
+      WorkingDirectory=/home/dan/myprojectdir
+      ExecStart=/home/dan/myprojectdir/myprojectenv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          myproject.wsgi:application
+      [Install]
+      WantedBy=multi-user.target
+      # Save and close 
+      # We can now start and enable the Gunicorn socket
+         sudo systemctl enable gunicorn.socket
+         sudo systemctl enable gunicorn.socket
+       #Testing Socket Activation
+         sudo systemctl status gunicorn
+       #Configure Nginx to Proxy Pass to Gunicorn after installing nginx service
+         sudo nano /etc/nginx/sites-available/myproject
+      # We will start by specifying that this block should listen on the normal port 80 and 
+      #that it should respond to our server’s domain name or IP address:
+         server {
+       listen 80;
+       server_name server_domain_or_IP;
+            }
+       location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /home/dan/myprojectdir;
+        }
+      }
+      location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+      }
+    }
+    
+    #save and close the file when you are finished
+    sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled
+    sudo nginx -t
+    sudo systemctl restart nginx
+  # The Final step would be Testing if the cofiguration is working accordingly
+
+
+
+
+
+   
+   
+   
+   
+   
+
+
+
+   
+   
+   
+   
+   
+   
+   
+   
